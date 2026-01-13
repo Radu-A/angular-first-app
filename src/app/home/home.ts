@@ -9,12 +9,18 @@ import { HousingService } from "../housing.service";
   template: `
     <section>
       <form>
-        <input type="text" placeholder="Filter by city" />
-        <button class="primary" type="button">Search</button>
+        <input type="text" placeholder="Filter by city" #filter />
+        <button
+          class="primary"
+          type="button"
+          (click)="filterResults(filter.value)"
+        >
+          Search
+        </button>
       </form>
     </section>
     <section class="results">
-      @for (housingLocation of housingLocationList; track $index) {
+      @for (housingLocation of filteredLocationList; track $index) {
       <app-housing-location
         [housingLocation]="housingLocation"
       ></app-housing-location>
@@ -29,8 +35,23 @@ export class Home {
   readonly baseUrl = "https://angular.dev/assets/images/tutorials/common";
 
   housingLocationList: HousingLocationInfo[] = [];
+  filteredLocationList: HousingLocationInfo[] = [];
 
   constructor() {
     this.housingLocationList = this.service.getAllHousingLocations();
+    this.filteredLocationList = this.housingLocationList;
+  }
+
+  filterResults(text: string) {
+    if (!text) {
+      this.filteredLocationList = this.housingLocationList;
+      return;
+    }
+    this.filteredLocationList = this.housingLocationList.filter(
+      (housingLocation) =>
+        housingLocation.city
+          .toLocaleLowerCase()
+          .includes(text.toLocaleLowerCase())
+    );
   }
 }

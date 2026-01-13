@@ -1,11 +1,13 @@
 import { Component, inject } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
+import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
+
 import { HousingLocationInfo } from "./../housing.location.info";
 import { HousingService } from "../housing.service";
 
 @Component({
   selector: "app-details",
-  imports: [],
+  imports: [ReactiveFormsModule],
   template: `<article>
     <img
       class="listing-photo"
@@ -27,16 +29,46 @@ import { HousingService } from "../housing.service";
         <li>Does this location have laundry: {{ housingLocation?.laundry }}</li>
       </ul>
     </section>
+    <section class="listing-apply">
+      <h2 class="section-heading">Apply now to live here</h2>
+      <form [formGroup]="applyForm" (submit)="submitAplication()">
+        <label for="first-name">First name</label>
+        <input type="text" id="first-name" formControlName="firstName" />
+
+        <label for="last-name">Last Name</label>
+        <input type="text" id="last-name" formControlName="lastName" />
+
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email" />
+
+        <button type="submit" class="primary">Apply now</button>
+      </form>
+    </section>
   </article>`,
   styleUrl: "./details.css",
 })
 export class Details {
   route: ActivatedRoute = inject(ActivatedRoute);
   service = inject(HousingService);
+
   housingLocation: HousingLocationInfo | undefined;
+
+  applyForm = new FormGroup({
+    firstName: new FormControl(""),
+    lastName: new FormControl(""),
+    email: new FormControl(""),
+  });
   constructor() {
     const housingLocationId = Number(this.route.snapshot.params["id"]);
     this.housingLocation =
       this.service.getHousingLocationById(housingLocationId);
+  }
+
+  submitAplication() {
+    this.service.submitApplication(
+      this.applyForm.value.firstName ?? "",
+      this.applyForm.value.lastName ?? "",
+      this.applyForm.value.email ?? ""
+    );
   }
 }
